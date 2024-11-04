@@ -1,0 +1,109 @@
+<?php
+/*
+Plugin Name: Calendar Post Filter
+Description: A plugin that displays a calendar and filters posts or events based on the selected date.
+Version: 1.0
+Author: Your Name
+*/
+
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+// Enqueue necessary scripts and styles
+function cpf_enqueue_datepicker_scripts() {
+    wp_enqueue_script('jquery-ui-datepicker');
+    wp_enqueue_style('jquery-ui', '//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
+    wp_enqueue_script('cpf-ajax-script', plugin_dir_url(__FILE__) . 'js/cpf-ajax.js', array('jquery', 'jquery-ui-datepicker'), null, true);
+    wp_localize_script('cpf-ajax-script', 'cpf_ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+}
+add_action('wp_enqueue_scripts', 'cpf_enqueue_datepicker_scripts');
+
+
+// Shortcode to display calendar and posts/events
+
+function cpf_small_calendar_shortcode() {
+    ob_start();
+    ?>
+    <div id="cpf-small-calendar"></div>
+    <div id="cpf-posts-events">
+        <p>Please select a date from the calendar above to see the posts or events.</p>
+    </div>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#cpf-small-calendar').datepicker({
+            onSelect: function(dateText) {
+                $.ajax({
+                    type: 'POST',
+                    url: cpf_ajax_object.ajax_url,
+                    data: {
+                        action: 'cpf_filter_posts_events',
+                        selected_date: dateText
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#cpf-posts-events').html(response.data);
+                        } else {
+                            $('#cpf-posts-events').html('<p>' + response.data + '</p>');
+                        }
+                    }
+                });
+            }
+        });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('cpf_small_calendar', 'cpf_small_calendar_shortcode');
+
+
+// Handle AJAX request to filter posts/events
+function cpf_filter_posts_events() {
+    if (!isset($_POST['selected_date'])) {
+        wp_send_json_error('Invalid date');
+    }
+
+    $selected_date = sanitize_text_field($_POST['selected_date']);
+    $formatted_date = date('Y-m-d', strtotime($selected_date)); // Format the date as needed
+
+    $args = array(
+        'post_type' => array('post', 'event'),
+        'meta_query' => array(
+            array(
+                'key' => '_event_start_date',
+                'value' => $formatted_date,
+                'compare' => '=',
+                'type' => 'DATE'
+            ),
+        ),
+    );
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) {
+        ob_start();
+        while ($query->have_posts()) {
+            $query->the_post();
+            ?>
+            <div class="cpf-post-event-item">
+                <div class="left_box">
+                    <img src="" alt="">
+                </div>
+                <div class="right_box">
+
+                </div>
+                <h3><?php the_title(); ?></h3>
+                <p><?php the_excerpt(); ?></p>
+            </div>
+            <?php
+        }
+        wp_reset_postdata();
+        $response = ob_get_clean();
+        wp_send_json_success($response);
+    } else {
+        wp_send_json_error('No posts or events found.');
+    }
+}
+add_action('wp_ajax_cpf_filter_posts_events', 'cpf_filter_posts_events');
+add_action('wp_ajax_nopriv_cpf_filter_posts_events', 'cpf_filter_posts_events');

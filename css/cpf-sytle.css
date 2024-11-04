@@ -1,0 +1,62 @@
+#cpf-small-calendar{
+    background-color: aquamarine;
+    padding: 30px 25px;
+    display: flex;
+    justify-content: end;
+    margin: auto;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+
+.cpf-post-event-item{
+    display: flex;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    margin-bottom: 20px;
+}
+
+.left_box{
+    width: 400px;
+    padding-right: 20px;
+}
+
+/* Highlight event dates in the calendar */
+/* .highlight-event a {
+    background-color: red;
+    color: #fff;
+    font-weight: bold;
+} */
+
+/* Highlight dates with events */
+/* Highlight event dates */
+.ui-datepicker-calendar .highlight-event a {
+    background-color: blue !important; /* Background color for highlighted dates */
+    color: #000 !important; /* Text color to ensure visibility */
+    border-radius: 50%; /* Rounded appearance */
+    display: block;
+}
+
+.ui-datepicker-calendar{
+    /* background-color: blue; */
+}
+
+.highlight-event{
+    background-color: #ff0!important; /* Yellow background for highlighted dates */
+    color: #000; /* Black text for better visibility */
+    display: block;
+}
+
+.highlight-event a{
+    background-color: #ff0!important; /* Yellow background for highlighted dates */
+    color: #000; /* Black text for better visibility */
+    display: block;
+}
+
+.no_event_found{
+    padding: 15px;
+}
+
+.nofound_img img{
+    width: 250px;
+    max-width: 100%;
+}
